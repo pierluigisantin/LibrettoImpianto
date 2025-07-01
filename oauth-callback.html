@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>OAuth Callback</title>
+</head>
+<body>
+  <p>Autenticazione in corso...</p>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state"); // assetId=...
+
+    const clientId = 'INSERISCI_CLIENT_ID_DELLA_CONNECTED_APP';
+    const redirectUri = 'https://pierluigisantin.github.io/LibrettoImpianto/oauth-callback.html';
+    const tokenUrl = 'https://frappaedilizia--partial.sandbox.my.salesforce.com/services/oauth2/token';
+
+    const verifier = sessionStorage.getItem("pkce_verifier");
+
+    async function exchangeToken() {
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code: code,
+        code_verifier: verifier
+      });
+
+      try {
+        const response = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body
+        });
+
+        const result = await response.json();
+        if (result.access_token) {
+          sessionStorage.setItem("access_token", result.access_token);
+          const redirectTarget = "index.html?" + (state || "");
+          window.location.href = redirectTarget;
+        } else {
+          document.body.innerHTML = "<pre>Errore: " + JSON.stringify(result, null, 2) + "</pre>";
+        }
+      } catch (e) {
+        document.body.innerHTML = "<pre>Errore durante lo scambio token: " + e + "</pre>";
+      }
+    }
+
+    if (code && verifier) {
+      exchangeToken();
+    } else {
+      document.body.innerHTML = "<p>⚠️ Parametri mancanti per il flusso OAuth.</p>";
+    }
+  </script>
+</body>
+</html>

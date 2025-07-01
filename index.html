@@ -34,6 +34,55 @@
 
   <script src="https://unpkg.com/pdf-lib"></script>
   <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+  <script>
+    const instanceUrl = 'https://frappaedilizia--partial.sandbox.my.salesforce.com';
+    const clientId = 'INSERISCI_CLIENT_ID_DELLA_CONNECTED_APP';
+    const redirectUri = 'https://pierluigisantin.github.io/LibrettoImpianto/oauth-callback.html';
+    const authEndpoint = instanceUrl + '/services/oauth2/authorize';
+
+    function generateRandomString(length) {
+      const array = new Uint32Array(length);
+      window.crypto.getRandomValues(array);
+      return Array.from(array, dec => ('0' + dec.toString(16)).slice(-2)).join('');
+    }
+
+    async function sha256(plain) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return btoa(String.fromCharCode(...hashArray))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function initiateOAuthFlow() {
+      const verifier = generateRandomString(64);
+      const challenge = await sha256(verifier);
+      sessionStorage.setItem('pkce_verifier', verifier);
+
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+        state: window.location.search.substring(1) // forward assetId, etc.
+      });
+
+      window.location.href = authEndpoint + '?' + params.toString();
+    }
+
+    // Verifica se abbiamo un access_token già salvato
+    const token = sessionStorage.getItem('access_token');
+    if (!token) {
+      initiateOAuthFlow();
+    } else {
+      console.log('✅ Access token presente. Pronto per chiamare l’API Salesforce.');
+      // Qui puoi continuare a usare app.js per caricare libretto.pdf e fetchare il JSON
+    }
+  </script>
+
   <script src="app.js"></script>
 </body>
 </html>
