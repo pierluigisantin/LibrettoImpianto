@@ -1,16 +1,39 @@
+
 <!DOCTYPE html>
-<html>
-
+<html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>replit</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8">
+  <title>Compilazione PDF con form HTML sovrapposta</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: sans-serif; }
+    #pdf-container { position: relative; display: inline-block; }
+    canvas.pdf-page { display: block; }
+    .field-input {
+      position: absolute;
+      border: 1px solid #888;
+      background: rgba(255,255,255,0.8);
+      font-size: 12px;
+      padding: 2px;
+    }
+    #toolbar {
+      padding: 10px;
+      background: #f0f0f0;
+    }
+  </style>
 </head>
-
 <body>
-  Hello world
-  <script src="script.js"></script>
-</body>
+  <div id="toolbar">
+    <input type="file" id="file-input" accept="application/pdf" />
+    <button id="save-data">💾 Salva dati</button>
+    <button id="apply-data">📤 Applica dati</button>
+    <button id="download-pdf">📥 Scarica PDF flatten</button>
+    <button id="prev-page">⬅️ Pagina precedente</button>
+    <button id="next-page">➡️ Pagina successiva</button>
+  </div>
+  <div id="pdf-container"></div>
 
+  <script src="https://unpkg.com/pdf-lib"></script>
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="app.js"></script>
+</body>
 </html>
